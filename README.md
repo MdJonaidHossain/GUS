@@ -9,7 +9,7 @@ This pipeline analyzes images using Fiji/ImageJ macros to measure particle/area 
 
 1. Install Fiji and ensure the required plugins are installed (Labkit, ROI Manager)
 
-2. Place the macro and classifier files in your Fiji macros folder 
+2. Place the classifier files in your Fiji macros folder 
 
 3. Create the required input and output directories
 
