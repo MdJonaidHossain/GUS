@@ -50,8 +50,8 @@ For each input image, the following files will be generated:
 - Renamed TIFF image
 - Area TIFF image 
 - GUS TIFF image
-- Total_Area_Results_genotype.txt 
-- Total_GUS_Results_genotype.txt
+- Total_Area_Results_.txt 
+- Total_GUS_Results_.txt
 
 The text results files contain particle analysis measurements for the corresponding image analysis.
 
