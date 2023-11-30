@@ -11,7 +11,7 @@ This pipeline analyzes images using Fiji/ImageJ macros to measure particle/area 
 
 2. Place the classifier files in your Fiji macros folder 
 
-3. Create the required input and output directories
+3. Create the required input and output directories (Raw Images, Renamed Images, Total Area Cut-Out, Gus Pixels, Output Results)
 
 ## Usage
 
