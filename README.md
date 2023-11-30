@@ -1,5 +1,5 @@
 # GUS
-GUS Image Processing in Arabidopsis thaliana
+GUS Image Processing in Arabidopsis thaliana on Mac OS
 
 # Fiji Image Analysis Pipeline
 
