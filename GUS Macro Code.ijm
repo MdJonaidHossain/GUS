@@ -7,9 +7,13 @@
 #@ File(label="Area Image Directory", style="directory") areaimgdir
 #@ File(label="GUS Image Directory", style="directory") gusimgdir
 #@ File(label="Output directory", style="directory") outputdir
+#@ File(label="Plot Profile directory", style="directory") plotoutputdir
+
+// Set The Pixel Per Inch (PPI) of the Image
+#@ String (label = "What is the Pixel Per Inch (PPI) of the Image ?", value = "300") PPI
 
 // OK to proceed
-#@ String(visibility=MESSAGE, value="Click OK to Proceed -->") OK
+#@ String(visibility=MESSAGE, value="Click OK to ProPlotceed -->") OK
 
 // Get a list of all the raw image files
 images = getFileList(rawimgdir);
@@ -28,17 +32,14 @@ for (i = 0; i < images.length; i++) {
     run("Duplicate...", "title=D_" + genotype);
     saveAs("Tiff", reimgdir + Separator + genotype + ".tiff");
     
-    run("Calculate Probability Map With Labkit", "input=Value segmenter_file=/Applications/Fiji.app/macros/Area.classifier use_gpu=false");
-    run("Convert to Mask", "calculate only black list create");
-    run("Median...", "radius=20 slice");
+    run("Segment Image With Labkit", "input=Value segmenter_file=/Applications/Fiji.app/macros/Area.classifier use_gpu=false");
+    run("Auto Threshold", "method=Default");
     
-    selectImage("probability map for " + genotype + ".tiff"); run("Close");
-    selectImage("MASK_probability map for " + genotype + ".tiff");
-    run("Invert", "slice");
+    run("Set Scale...", "distance=" + PPI + " known=1 unit=inch");
     
     run("Set Measurements...", "area mean standard modal min centroid center perimeter bounding fit shape feret's integrated median skewness kurtosis area_fraction stack limit display invert scientific add nan redirect=" + genotype + " decimal=10");
     
-    run("Analyze Particles...", "pixel show=Nothing display exclude clear include summarize overlay add composite slice");
+    run("Analyze Particles...", "size=1000-Infinity pixel show=Overlay display exclude clear include summarize overlay add composite");
     
     saveAs("text", outputdir + Separator + "Total_Area_Results_" + genotype + ".txt"); close();
     
@@ -49,15 +50,21 @@ for (i = 0; i < images.length; i++) {
     saveAs("Tiff", areaimgdir + Separator + genotype + ".tiff");
     
     run("Calculate Probability Map With Labkit", "input=Value segmenter_file=/Applications/Fiji.app/macros/GUS.classifier use_gpu=false");
-    run("Convert to Mask", "calculate only black list create");
-    selectImage("MASK_probability map for " + genotype + ".tiff");
-    run("Invert", "slice");
+    run("Delete Slice", "delete=channel");
+    run("Convert to Mask");
     
-    run("Analyze Particles...", "pixel show=Nothing display exclude clear include summarize overlay add composite slice");
+    run("Analyze Particles...", "pixel show=Overlay display exclude clear include summarize overlay add composite slice");
     
-    saveAs("text", outputdir + Separator + "Total_GUS_Results_" + genotype + ".txt"); close();
+    saveAs("text", outputdir + Separator + "Total_GUS_Results_" + genotype + ".txt");
     
-    saveAs("Tiff", gusimgdir + Separator + genotype + ".tiff");
+    saveAs("Tiff", gusimgdir + Separator + genotype + "_GUS.tiff");
+    
+    makeRectangle(0, 0, getWidth(), getHeight());
+    run("Plot Profile");
+    Plot.showValues();
+    
+	saveAs("Results", plotoutputdir + File.separator + genotype + "_plot_profile_data.txt");
+       
     close("ROI Manager"); run("Close");
     close("Results"); run("Close");
     run("Close All");
