@@ -50,7 +50,7 @@ This macro is designed to analyze plant images using ImageJ with the Labkit plug
 
 ## Troubleshooting
 - If segmentation fails, check the integrity of your classifier files.
-- Ensure the ImageJ with Labkit is set up correctly with GPU usage if applicable.
+- Ensure the ImageJ with Labkit is set up correctly.
 
 ## Feedback
 If you encounter any issues or have suggestions for improvements, please open an issue or contribute directly via pull requests.
