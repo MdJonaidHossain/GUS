@@ -1,79 +1,100 @@
 // Hi & Welcome MJH
-#@ String(label="Hii & Welcome, Please Choose the Input Directories") MJH
 
 // Input Directories
 #@ File(label="Raw Image Directory", style="directory") rawimgdir
 #@ File(label="Renamed Image Directory", style="directory") reimgdir
 #@ File(label="Area Image Directory", style="directory") areaimgdir
 #@ File(label="GUS Image Directory", style="directory") gusimgdir
-#@ File(label="Output directory", style="directory") outputdir
-#@ File(label="Plot Profile directory", style="directory") plotoutputdir
-
-// Set The Pixel Per Inch (PPI) of the Image
-#@ String (label = "What is the Pixel Per Inch (PPI) of the Image ?", value = "300") PPI
+#@ File(label="Area Output Directory", style="directory") areaoutputdir
+#@ File(label="GUS Output directory", style="directory") gusoutputdir
+#@ File(label="Area Classifier Path", style="file") areaclassifier
+#@ File(label="GUS Classifier Path", style="file") gusclassifier
 
 // OK to proceed
-#@ String(visibility=MESSAGE, value="Click OK to ProPlotceed -->") OK
+#@ String(visibility=MESSAGE, value="Click OK to Proceed -->") OK
 
 // Get a list of all the raw image files
 images = getFileList(rawimgdir);
-Separator = File.separator;
+Separator = File.separator; // Use consistent case for variables
 
+// Loop through each image in the directory
 // Loop through each image in the directory
 for (i = 0; i < images.length; i++) {
     open(rawimgdir + Separator + images[i]);
-
+    
+    // Prompt user for genotype information
     Dialog.create("Genotype Info");
     Dialog.addString("Genotype:", "Value");
     Dialog.show();
     genotype = Dialog.getString();
     
+    // Rename the image based on the genotype
     rename(genotype);
+    
+    // Subtract background to enhance the image
+    run("Subtract Background...", "rolling=50 light separate sliding");
+    
+    // Duplicate the processed image for saving and analysis
     run("Duplicate...", "title=D_" + genotype);
     saveAs("Tiff", reimgdir + Separator + genotype + ".tiff");
+
+    // Segment the image using the Labkit classifier for leaf area
+    run("Segment Image With Labkit", "input=Value segmenter_file=" + areaclassifier + " use_gpu=false");
     
-    run("Segment Image With Labkit", "input=Value segmenter_file=/Applications/Fiji.app/macros/Area.classifier use_gpu=false");
-    run("Auto Threshold", "method=Default");
+    // Apply automatic thresholding for segmentation
+    run("Auto Threshold", "method=Default white");
     
-    run("Set Scale...", "distance=" + PPI + " known=1 unit=inch");
+    // Set scale for measurements (in pixels)
+    run("Set Scale...", "distance=1 known=0 unit=pixel");
     
-    run("Set Measurements...", "area mean standard modal min centroid center perimeter bounding fit shape feret's integrated median skewness kurtosis area_fraction stack limit display invert scientific add nan redirect=" + genotype + " decimal=10");
+    // Measure the leaf area
+    run("Set Measurements...", "area decimal=5");
+    run("Analyze Particles...", "size=20000-Infinity pixel show=Overlay display exclude clear include summarize overlay add composite");
     
-    run("Analyze Particles...", "size=1000-Infinity pixel show=Overlay display exclude clear include summarize overlay add composite");
+    // Get the leaf area from the results table
+    saveAs("text", areaoutputdir + Separator + "Total_Area_Results_" + genotype + ".txt");
+    close("Total_Area_Results_" + genotype + ".txt");
     
-    saveAs("text", outputdir + Separator + "Total_Area_Results_" + genotype + ".txt"); close();
+    // Close the Results and Summary tables
+    close("Results");
+    close("Summary");
     
+    // Select the original image and process it for saving
     selectImage(genotype);
     roiManager("select", 0);
     run("Clear Outside");
-    roiManager("deselect");
+    roiManager("Delete");
     saveAs("Tiff", areaimgdir + Separator + genotype + ".tiff");
     
-    run("Calculate Probability Map With Labkit", "input=Value segmenter_file=/Applications/Fiji.app/macros/GUS.classifier use_gpu=false");
-    run("Delete Slice", "delete=channel");
-    run("Convert to Mask");
+    // Segment the image using the Labkit classifier for GUS-stained regions
+    run("Segment Image With Labkit", "input=Value segmenter_file=" + gusclassifier + " use_gpu=false");
     
-    run("Analyze Particles...", "pixel show=Overlay display exclude clear include summarize overlay add composite slice");
+    // Apply automatic thresholding for GUS segmentation
+    run("Auto Threshold", "method=Default");
     
-    saveAs("text", outputdir + Separator + "Total_GUS_Results_" + genotype + ".txt");
+    // Set scale for measurements (in pixels) again
+    run("Set Scale...", "distance=1 known=0 unit=pixel");
     
+    // Invert the image for correct measurement of GUS area
+    run("Invert");
+    
+    // Measure the GUS area
+    run("Analyze Particles...", "pixel show=Overlay display clear summarize overlay add composite");
+    
+    // Save the GUS measurement results
+    saveAs("text", gusoutputdir + Separator + "Total_GUS_Results_" + genotype + ".txt");
+    close("Total_GUS_Results_" + genotype + ".txt");
+    
+    // Save the image
     saveAs("Tiff", gusimgdir + Separator + genotype + "_GUS.tiff");
-    
-    makeRectangle(0, 0, getWidth(), getHeight());
-    run("Plot Profile");
-    Plot.showValues();
-    
-	saveAs("Results", plotoutputdir + File.separator + genotype + "_plot_profile_data.txt");
-       
-    close("ROI Manager"); run("Close");
-    close("Results"); run("Close");
-    run("Close All");
-    close("Total*.txt");
+
+    // Close all open images
     close("*");
+    run("Close All");
 }
 
-// Close all windows
+// Close any remaining open windows
 run("Close All");
 
-// Print message when processing is done
-print("Image Analysis is Finished! Now Chillllllllll");
+// Notify the user that the analysis is complete
+print("Image Analysis is Finished!");
