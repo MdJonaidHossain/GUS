@@ -1,58 +1,63 @@
-# GUS
-GUS Image Processing in Arabidopsis thaliana on Mac OS
+# ImageJ Macro for Plant Image Analysis
 
-# Fiji Image Analysis Pipeline
-
-This pipeline analyzes images using Fiji/ImageJ macros to measure particle/area properties and export results.
-
-## Setup
-
-1. Install Fiji and ensure the required plugins are installed (Labkit, ROI Manager)
-
-2. Place the classifier files in your Fiji macros folder 
-
-3. Create the required input and output directories (Raw Images, Renamed Images, Total Area Cut-Out, Gus Pixels, Output Results)
+## Overview
+This macro is designed to analyze plant images using ImageJ with the Labkit plugin for segmentation. It processes raw images to measure leaf area and GUS-stained regions, providing outputs in various directories.
 
 ## Usage
 
-1. Open Fiji and run the macro 
+### Prerequisites
+- **ImageJ** with **Labkit** plugin installed
+- **Two classifiers** for leaf area and GUS staining
 
-2. Select the input and output directories 
+### Steps to Run the Macro
+1. **Launch ImageJ** and navigate to `File > New > Macro` to open the macro editor.
+2. **Paste** the provided macro code into the editor.
+3. **Run** the macro by clicking on the "Run" button or press `Ctrl+R` (Cmd+R on Mac).
 
-3. Click "OK" to start processing
+### Input Parameters
+- **Raw Image Directory**: Where your raw images are stored. (`rawimgdir`)
+- **Renamed Image Directory**: Directory to save renamed images. (`reimgdir`)
+- **Area Image Directory**: Directory for saving images segmented for leaf area. (`areaimgdir`)
+- **GUS Image Directory**: Directory for saving GUS-stained region images. (`gusimgdir`)
+- **Area Output Directory**: Directory to save leaf area measurement results. (`areaoutputdir`)
+- **GUS Output Directory**: Directory to save GUS staining measurements. (`gusoutputdir`)
+- **Area Classifier Path**: Path to the classifier file for leaf area segmentation.
+- **GUS Classifier Path**: Path to the classifier file for GUS staining segmentation.
 
-4. The macro will loop through images in the raw image input folder:
+### Macro Flow
+- **Image Processing**: 
+  - Opens each image from the raw directory.
+  - Prompts for genotype input to name the image accordingly.
+  - Applies background subtraction.
+  - Duplicates and saves the processed image.
 
-   - Rename the image based on user input genotype  
+- **Segmentation and Analysis for Leaf Area**:
+  - Uses Labkit for segmentation.
+  - Applies auto-thresholding.
+  - Measures and records the leaf area.
 
-   - Duplicate the image and save to the renamed image folder
+- **Segmentation and Analysis for GUS Staining**:
+  - Again uses Labkit for segmentation but for GUS-stained areas.
+  - Measures and records the GUS-stained area.
 
-   - Run area measurement analysis and save results
+- **Output**:
+  - Saves segmented images and measurement results in designated directories.
 
-   - Run GUS measurement analysis and save results
+### Notes
+- Ensure all paths to directories and classifiers are correct before running.
+- The macro assumes images are in a format readable by ImageJ (e.g., TIFF, PNG).
+- The script closes all windows to clean up after processing each image.
 
-   - Save area and GUS images to respective output folders
+## Troubleshooting
+- If segmentation fails, check the integrity of your classifier files.
+- Ensure the ImageJ with Labkit is set up correctly with GPU usage if applicable.
 
-5. When complete, results files and images will be in the output folders
+## Feedback
+If you encounter any issues or have suggestions for improvements, please open an issue or contribute directly via pull requests.
 
-6. Close all windows when finished
+## License
+[Specify the license if applicable, e.g., MIT, GPL, etc.]
 
-## Requirements
+---
 
-- Fiji 
-- Labkit plugin
-- ROI Manager plugin
-
-## Results
-
-For each input image, the following files will be generated:
-
-- Renamed TIFF image
-- Area TIFF image 
-- GUS TIFF image
-- Total_Area_Results_.txt 
-- Total_GUS_Results_.txt
-
-The text results files contain particle analysis measurements for the corresponding image analysis.
-
-Let me know if any part of the usage or setup needs clarification!
+Enjoy analyzing your plant images with this macro!
